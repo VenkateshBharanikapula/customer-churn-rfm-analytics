@@ -1,191 +1,218 @@
 # Customer Churn & RFM Segmentation Analytics (End-to-End)
 
-## Overview
-This project builds an end-to-end customer analytics workflow to identify high-value customer segments and customers at risk of churn. Using transaction-level purchase history, the solution delivers:
-- **RFM segmentation** (Recency, Frequency, Monetary) for customer value profiling  
-- **Churn proxy analysis** using inactivity thresholds  
-- **Cohort retention analysis** to understand repeat behavior over time  
-- **Revenue impact & ROI simulation** in Excel to quantify retention strategy value  
-- **Power BI dashboard** for interactive monitoring and stakeholder reporting  
+## 📌 Overview
 
-The repository is structured as a reusable framework for churn monitoring and segmentation-based retention planning.
+This project builds an **end-to-end customer analytics workflow** to identify high-value customer segments and customers at risk of churn.
 
----
+Using transaction-level purchase data, the solution delivers:
 
-## Business Objective
-**Identify customers at risk of churn and high-value segments, then translate insights into actionable retention strategies** to reduce attrition and maximize revenue.
+* 📊 **RFM segmentation** (Recency, Frequency, Monetary)
+* ⚠️ **Churn proxy analysis** using inactivity thresholds
+* 🔁 **Cohort retention analysis**
+* 💰 **Revenue impact & ROI simulation (Excel)**
+* 📈 **Power BI dashboard** for stakeholder reporting
 
-Key questions answered:
-- Which segments contribute the most revenue and need protection?
-- Which segments show the highest churn risk and require intervention?
-- How does retention behave across cohorts (month-0, month-1, …)?
-- What is the estimated revenue impact of improving churn by a small percentage?
+> 💡 Designed as a reusable framework for churn monitoring and retention strategy planning.
 
 ---
 
-## Dataset
-**Online Retail II** (transaction-level retail data), containing:
-- Invoice-level transactions with product and customer identifiers
-- Purchase quantities, unit prices, invoice timestamps
-- Customer geography
+## 🎯 Business Objective
+
+**Identify customers at risk of churn and high-value segments, and translate insights into actionable retention strategies.**
+
+### Key Questions Answered
+
+* Which segments contribute the most revenue?
+* Which segments show the highest churn risk?
+* How does retention behave across cohorts?
+* What is the financial impact of improving churn?
 
 ---
 
-## Tech Stack
-- **SQL Server (SSMS)**: data validation, RFM aggregation, scoring logic (quintiles using window functions)
-- **Python (pandas, numpy, matplotlib, seaborn)**: data cleaning, feature engineering, churn proxy, cohort retention, figure export
-- **Excel**: revenue impact modeling and ROI simulation scenarios
-- **Power BI**: dashboarding for segmentation, revenue contribution, and churn risk monitoring
+## 📂 Dataset
+
+**Online Retail II** dataset:
+
+* Transaction-level purchase records
+* Customer and product identifiers
+* Quantity, price, invoice timestamps
+* Customer geography
 
 ---
 
-## Methodology
+## 🛠️ Tech Stack
 
-### 1) Data Preparation & Cleaning (Python)
-A clean transaction layer is created to ensure valid RFM computation:
-- Removed missing `customer_id`
-- Removed cancelled invoices (invoice prefix “C”)
-- Removed non-positive quantities
-- Created `total_amount = quantity * price`
-- Standardized column names and parsed `invoicedate`
-
-Output:
-- `data/processed/transactions_clean.csv`
+* **SQL Server (SSMS)** → RFM scoring, aggregations, window functions
+* **Python (pandas, numpy, matplotlib, seaborn)** → cleaning, analysis, visualization
+* **Excel** → revenue impact & ROI simulation
+* **Power BI** → dashboarding & reporting
 
 ---
 
-### 2) Feature Engineering: RFM Metrics (Python)
-Customer-level metrics are computed using a snapshot date defined as:
-- `snapshot_date = max(invoicedate) + 1 day`
+## ⚙️ Methodology
 
-RFM definitions:
-- **Recency**: days since last purchase  
-- **Frequency**: distinct invoices per customer  
-- **Monetary**: total revenue per customer  
+### 1️⃣ Data Cleaning (Python)
 
-Output:
-- `data/processed/customer_rfm_segments.csv`
+* Removed missing `customer_id`
+* Removed cancelled invoices (`C` prefix)
+* Removed non-positive quantities
+* Created `total_amount = quantity × price`
+* Parsed `invoicedate`
 
----
-
-### 3) RFM Scoring (Quintiles)
-Each customer receives 1–5 scores (5 = best) using quintiles:
-- `R` score inverted (lower recency is better)
-- `F` and `M` higher is better
-
-A combined code is created:
-- `rfm_score = r_score + f_score + m_score` (e.g., **555**)
-
-This enables consistent segmentation and dashboarding.
+**Output:**
+`data/processed/transactions_clean.csv`
 
 ---
 
-### 4) Segmentation (Business-Friendly Labels)
-Customers are mapped into segments for action:
-- **Champions**: recent + frequent (high priority retention / VIP)
-- **Loyal Customers**: consistent repeat customers (grow and protect)
-- **New Customers**: recent but low frequency (activation and onboarding)
-- **At Risk**: not recent but historically active (reactivation focus)
-- **Hibernating**: inactive and low engagement (low-cost winback only)
+### 2️⃣ RFM Feature Engineering
+
+* Snapshot date = `max(invoicedate) + 1 day`
+
+**Metrics:**
+
+* Recency → days since last purchase
+* Frequency → number of invoices
+* Monetary → total spend
+
+**Output:**
+`data/processed/customer_rfm_segments.csv`
 
 ---
 
-### 5) Churn Proxy (Inactivity Threshold)
-Since explicit churn labels are not provided, churn is defined as a business proxy:
-- **Churned = Recency > 90 days**
+### 3️⃣ RFM Scoring (Quintiles)
 
-This enables practical churn monitoring and segment-level risk identification.
+* Scores: 1–5 (5 = best)
+* Recency inverted
+* Combined score:
 
----
-
-### 6) Cohort Retention (Monthly)
-A monthly cohort model tracks retention as:
-- Cohort month = customer’s first purchase month
-- Cohort index = months since first purchase
-
-The retention matrix is exported and visualized as a heatmap to identify:
-- early drop-off behavior
-- cohort quality differences
-- long-tail retention patterns
+```
+rfm_score = R + F + M  (e.g., 555)
+```
 
 ---
 
-### 7) Revenue Impact & ROI Simulation (Excel)
-An executive-style scenario model estimates the value of churn improvements.
+### 4️⃣ Customer Segmentation
 
-Inputs:
-- Total Revenue
-- Current churn rate (assumption)
-- Target churn reduction (scenario)
-- Campaign cost (scenario)
-
-Outputs:
-- Revenue at risk
-- Incremental revenue gain
-- Net impact
-- ROI
-
-This converts analytics into business decision support.
+* 🏆 Champions
+* 🤝 Loyal Customers
+* 🆕 New Customers
+* ⚠️ At Risk
+* 💤 Hibernating
 
 ---
 
-## Key Results (From Your Run)
+### 5️⃣ Churn Proxy
 
-### Segment & Revenue Concentration
-- **Champions** contribute ~**69%** of revenue → highest protection priority
-- **At Risk** and **Hibernating** represent major churn exposure → reactivation and winback targets
-
-### Churn Proxy (Recency > 90 days)
-- Overall churn proxy: **50.9%**
-- Highest churn exposure concentrated in **At Risk** and **Hibernating**
-
-### Revenue Impact Model (Excel)
-- Total revenue: **17.74M**
-- Revenue at risk (30% churn): **5.32M**
-- 5% churn reduction → **~$266K** incremental revenue
-- Example ROI: $50K campaign → **~432% ROI**
+```
+Recency > 90 days → Churned
+```
 
 ---
 
-## Visual Outputs (Python Exported)
+### 6️⃣ Cohort Retention
+
+* Cohort = first purchase month
+* Tracks retention over time
+
+Used to identify:
+
+* Early drop-offs
+* Retention decay
+* Cohort quality
+
+---
+
+### 7️⃣ Revenue Impact Model (Excel)
+
+**Inputs:**
+
+* Total Revenue
+* Current churn rate
+* Target churn reduction
+* Campaign cost
+
+**Outputs:**
+
+* Revenue at risk
+* Incremental revenue gain
+* Net impact
+* ROI
+
+---
+
+## 📊 Key Results
+
+### 💰 Revenue Concentration
+
+* **Champions → ~69% of revenue**
+
+### ⚠️ Churn Risk
+
+* Overall churn proxy: **50.9%**
+* Highest risk: **At Risk** and **Hibernating**
+
+### 📈 Business Impact
+
+* Total revenue: **17.74M**
+* Revenue at risk: **5.32M**
+* 5% churn reduction → **~$266K incremental revenue**
+* Campaign example:
+
+  * Cost: $50K
+  * ROI: **~432%**
+
+---
+
+## 📷 Visual Outputs
+
 ### Customer Segment Distribution
+
 ![Customer Segment Distribution](outputs/figures/01_segment_distribution.png)
 
 ### Revenue Contribution by Segment
+
 ![Revenue Contribution by Segment](outputs/figures/02_revenue_by_segment.png)
 
 ### Churn Rate by Segment (Proxy)
+
 ![Churn Rate by Segment](outputs/figures/03_churn_rate_by_segment.png)
 
 ### Cohort Retention Heatmap
+
 ![Cohort Retention Heatmap](outputs/figures/04_cohort_retention_heatmap.png)
 
 ---
 
-## Power BI Dashboard
-The Power BI report provides an interactive view of:
-- Total customers, total revenue, churn rate
-- Segment distribution
-- Revenue contribution by segment
-- Churn volume by segment
+## 📊 Power BI Dashboard
 
-File:
-- `dashboards/Customer_Churn_RFM_Dashboard.pbix`
+Interactive dashboard includes:
 
----
+* Total customers, revenue, churn rate
+* Segment distribution
+* Revenue contribution
+* Churn insights
 
-## SQL Implementation (SSMS)
-RFM is also implemented in SQL Server to demonstrate analytics capability using:
-- Aggregations
-- CTEs
-- Window functions (`NTILE`) for quintile scoring
-
-Exported file:
-- `data/processed/rfm_sql_export.csv` / `.xlsx`
+**File:**
+`dashboards/Customer_Churn_RFM_Dashboard.pbix`
 
 ---
 
-## Project Structure
+## 🧠 SQL Implementation (SSMS)
+
+* Built using:
+
+  * CTEs
+  * Aggregations
+  * `NTILE` window functions
+
+**Output:**
+`data/processed/rfm_sql_export.xlsx`
+
+---
+
+## 📁 Project Structure
+
+```
 customer_churn_rfm_analytics/
 ├── dashboards/
 │   └── Customer_Churn_RFM_Dashboard.pbix
@@ -211,3 +238,22 @@ customer_churn_rfm_analytics/
 ├── requirements.txt
 ├── .gitignore
 └── README.md
+```
+
+---
+
+## 🚀 How to Use
+
+1. Clone the repository
+2. Install dependencies (`requirements.txt`)
+3. Run scripts from `src/`
+4. Open Power BI dashboard
+5. Explore Excel ROI model
+
+---
+
+## 💡 Key Takeaways
+
+* Combines **analytics + business impact**
+* Demonstrates **end-to-end workflow**
+* Bridges **data analysis and decision-making**
